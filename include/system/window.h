@@ -262,6 +262,7 @@ enum {
      * the aspect ratio of the buffers produced.
      */
     NATIVE_WINDOW_STICKY_TRANSFORM = 11,
+    NATIVE_WINDOW_GET_FRAME_LOST = 100
 };
 
 /* Valid operations for the (*perform)() hook.
