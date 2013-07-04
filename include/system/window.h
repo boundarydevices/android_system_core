@@ -277,6 +277,7 @@ enum {
      * age will be 0.
      */
     NATIVE_WINDOW_BUFFER_AGE = 13,
+    NATIVE_WINDOW_GET_FRAME_LOST = 100
 };
 
 /* Valid operations for the (*perform)() hook.
