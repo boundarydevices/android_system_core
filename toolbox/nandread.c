@@ -45,7 +45,7 @@ int nandread_main(int argc, char **argv)
     struct mtd_info_user mtdinfo;
     struct mtd_ecc_stats initial_ecc, last_ecc, ecc;
     struct mtd_oob_buf oobbuf;
-    nand_ecclayout_t ecclayout;
+    struct nand_ecclayout_user ecclayout;
 
     do {
         c = getopt(argc, argv, "d:f:s:S:L:Rhv");
