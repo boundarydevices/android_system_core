@@ -15,7 +15,7 @@
  */
 
 /*
- * Copyright (C) 2013 Freescale Semiconductor, Inc.
+ * Copyright (C) 2013-2014 Freescale Semiconductor, Inc.
  */
 
 #define LOG_TAG "healthd"
@@ -329,8 +329,15 @@ bool BatteryMonitor::update(void) {
     }
 
     healthd_mode_ops->battery_update(&props);
-    return props.chargerAcOnline | props.chargerUsbOnline |
-            props.chargerWirelessOnline;
+    if (!strcmp(prop, "1")) {
+        return false;
+    } else {
+        if (0 == props.batteryTemperature)
+            return false;
+        else
+            return props.chargerAcOnline | props.chargerUsbOnline |
+                props.chargerWirelessOnline;
+    }
 }
 
 status_t BatteryMonitor::getProperty(int id, struct BatteryProperty *val) {
