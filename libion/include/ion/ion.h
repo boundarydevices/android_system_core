@@ -4,6 +4,7 @@
  * Memory Allocator functions for ion
  *
  *   Copyright 2011 Google, Inc
+ *   Copyright (C) 2014 Freescale Semiconductor, Inc.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -40,6 +41,7 @@ int ion_map(int fd, ion_user_handle_t handle, size_t length, int prot,
             int flags, off_t offset, unsigned char **ptr, int *map_fd);
 int ion_share(int fd, ion_user_handle_t handle, int *share_fd);
 int ion_import(int fd, int share_fd, ion_user_handle_t *handle);
+unsigned long ion_phys(int fd,  ion_user_handle_t handle);
 
 __END_DECLS
 
