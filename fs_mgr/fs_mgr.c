@@ -497,7 +497,22 @@ int fs_mgr_mount_all(struct fstab *fstab, int mount_mode)
     int mret = -1;
     int mount_errno = 0;
     int attempted_idx = -1;
+#ifdef DM_VERITY_DYNAMIC 
+    char *dm_verity=0;
+    int fd;
+    static char  cmdline[1024];
+       fd = open("/proc/cmdline", O_RDONLY);
+              if (fd >= 0) {
+                        int  n = read(fd, cmdline, sizeof(cmdline)-1 );
+                        if (n < 0) n = 0;
+                        cmdline[n] = 0;
+                        close(fd);
+                    } else {
+                        cmdline[0] = 0;
+                    }
 
+ 	dm_verity = strstr( cmdline, "androidboot.dm_verity=disabled");
+#endif
     if (!fstab) {
         return -1;
     }
@@ -509,7 +524,12 @@ int fs_mgr_mount_all(struct fstab *fstab, int mount_mode)
              ((mount_mode == MOUNT_MODE_EARLY) && fs_mgr_is_latemount(&fstab->recs[i]))) {
             continue;
         }
-
+#ifdef DM_VERITY_DYNAMIC
+if (dm_verity)
+{
+fstab->recs[i].fs_mgr_flags &= ~(MF_VERIFY);
+}
+#endif
         /* Skip swap and raw partition entries such as boot, recovery, etc */
         if (!strcmp(fstab->recs[i].fs_type, "swap") ||
             !strcmp(fstab->recs[i].fs_type, "emmc") ||
