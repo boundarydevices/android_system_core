@@ -17,6 +17,9 @@ ifneq (,$(filter userdebug,$(TARGET_BUILD_VARIANT)))
 LOCAL_CFLAGS += -DALLOW_ADBD_DISABLE_VERITY=1
 endif
 
+ifeq ($(DM_VERITY_RUNTIME_CONFIG),true)
+LOCAL_CFLAGS += -DDM_VERITY_DYNAMIC
+endif
 include $(BUILD_STATIC_LIBRARY)
 
 
@@ -37,6 +40,8 @@ LOCAL_UNSTRIPPED_PATH := $(TARGET_ROOT_OUT_UNSTRIPPED)
 LOCAL_STATIC_LIBRARIES := libfs_mgr liblogwrap libcutils liblog libc libmincrypt libext4_utils_static
 
 LOCAL_CFLAGS := -Werror
-
+ifeq ($(DM_VERITY_RUNTIME_CONFIG),true)
+LOCAL_CFLAGS += -DDM_VERITY_DYNAMIC
+endif
 include $(BUILD_EXECUTABLE)
 
