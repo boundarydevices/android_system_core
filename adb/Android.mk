@@ -114,7 +114,7 @@ LOCAL_SRC_FILES := \
 	disable_verity_service.c \
 	usb_linux_client.c
 
-LOCAL_CFLAGS := -O2 -g -DADB_HOST=0 -Wall -Wno-unused-parameter -Werror
+LOCAL_CFLAGS := -O2 -g -DADB_HOST=0 -Wall -Wno-unused-parameter -Werror -Wno-deprecated-declarations
 LOCAL_CFLAGS += -D_XOPEN_SOURCE -D_GNU_SOURCE
 
 ifneq (,$(filter userdebug eng,$(TARGET_BUILD_VARIANT)))
