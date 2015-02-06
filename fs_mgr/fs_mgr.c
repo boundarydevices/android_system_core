@@ -519,7 +519,7 @@ int fs_mgr_mount_all(struct fstab *fstab)
                         cmdline[0] = 0;
                     }
 
- 	dm_verity = strstr( cmdline, "DM_VERITY=disable");
+ 	dm_verity = strstr( cmdline, "androidboot.dm_verity=disabled");
 #endif
     if (!fstab) {
         return -1;
