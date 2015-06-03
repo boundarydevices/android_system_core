@@ -472,6 +472,26 @@ done:
     free(data);
 }
 
+void get_soc_name(char *soc)
+{
+    const char *socinfo = "/sys/devices/soc0/soc_id";
+    FILE *fp;
+
+    fp = fopen(socinfo, "r");
+    if (fp == NULL) {
+        ERROR("Failed reading %s\n", socinfo);
+        return;
+    }
+
+    if (fscanf(fp, "%s", soc) != 1) {
+        ERROR("fscanf fail\n");
+        fclose(fp);
+        return;
+     }
+
+     fclose(fp);
+}
+
 void import_kernel_cmdline(int in_qemu,
                            void (*import_kernel_nv)(char *name, int in_qemu))
 {

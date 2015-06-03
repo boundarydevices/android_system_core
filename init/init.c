@@ -70,6 +70,7 @@ static int   bootchart_count;
 static char console[32];
 static char bootmode[32];
 static char hardware[32];
+static char soc[32];
 static unsigned revision = 0;
 static char qemu[32];
 
@@ -778,6 +779,13 @@ static void export_kernel_boot_props(void)
         strlcpy(hardware, tmp, sizeof(hardware));
     property_set("ro.hardware", hardware);
 
+    /* if this was given on kernel command line, override what we read
+     * before (e.g. from /sys/devices/soc0/soc_id), if anything */
+    ret = property_get("ro.boot.soc", tmp);
+    if (ret)
+        strlcpy(soc, tmp, sizeof(soc));
+    property_set("ro.soc", soc);
+
     snprintf(tmp, PROP_VALUE_MAX, "%d", revision);
     property_set("ro.revision", tmp);
 
@@ -1048,6 +1056,7 @@ int main(int argc, char **argv)
     property_init();
 
     get_hardware_name(hardware, &revision);
+    get_soc_name(soc);
 
     process_kernel_cmdline();
 
