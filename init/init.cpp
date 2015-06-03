@@ -69,6 +69,7 @@ struct selabel_handle *sehandle_prop;
 
 static int property_triggers_enabled = 0;
 
+static char soc[32];
 static char qemu[32];
 
 static struct action *cur_action = NULL;
@@ -794,6 +795,8 @@ static void import_kernel_nv(char *name, bool for_emulator)
 }
 
 static void export_kernel_boot_props() {
+    char tmp[PROP_VALUE_MAX];
+    int ret;
     struct {
         const char *src_prop;
         const char *dst_prop;
@@ -811,6 +814,12 @@ static void export_kernel_boot_props() {
         int rc = property_get(prop_map[i].src_prop, value);
         property_set(prop_map[i].dst_prop, (rc > 0) ? value : prop_map[i].default_value);
     }
+    /* if this was given on kernel command line, override what we read
+     * before (e.g. from /sys/devices/soc0/soc_id), if anything */
+    ret = property_get("ro.boot.soc", tmp);
+    if (ret)
+        strlcpy(soc, tmp, sizeof(soc));
+    property_set("ro.soc", soc);
 }
 
 static void process_kernel_dt(void)
@@ -1022,6 +1031,7 @@ int main(int argc, char** argv) {
     klog_set_level(KLOG_NOTICE_LEVEL);
 
     NOTICE("init%s started!\n", is_first_stage ? "" : " second stage");
+    get_soc_name(soc);
 
     if (!is_first_stage) {
         // Indicate that booting is in progress to background fw loaders, etc.

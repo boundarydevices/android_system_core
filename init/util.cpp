@@ -430,6 +430,27 @@ void import_kernel_cmdline(bool in_qemu, std::function<void(char*,bool)> import_
     }
 }
 
+void get_soc_name(char *soc)
+{
+    const char *socinfo = "/sys/devices/soc0/soc_id";
+    FILE *fp;
+
+    fp = fopen(socinfo, "r");
+    if (fp == NULL) {
+        ERROR("Failed reading %s\n", socinfo);
+        return;
+    }
+
+    if (fscanf(fp, "%s", soc) != 1) {
+        ERROR("fscanf fail\n");
+        fclose(fp);
+        return;
+     }
+
+     fclose(fp);
+}
+
+
 int make_dir(const char *path, mode_t mode)
 {
     int rc;
