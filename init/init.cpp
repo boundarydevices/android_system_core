@@ -474,6 +474,15 @@ static void process_kernel_dt() {
     }
 }
 
+static void kernel_cmdline_to_env(const std::string& key, const std::string& value, bool for_emulator) {
+    /* only add variable that are android-specific */
+    if (android::base::StartsWith(key, "androidboot.")) {
+        setenv(key.c_str(), value.c_str(), 0);
+        /* add it to ENV array for forked processes */
+        add_environment(key.c_str(), value.c_str());
+    }
+}
+
 static void process_kernel_cmdline() {
     // Don't expose the raw commandline to unprivileged processes.
     chmod("/proc/cmdline", 0440);
@@ -483,6 +492,11 @@ static void process_kernel_cmdline() {
     // as properties.
     import_kernel_cmdline(false, import_kernel_nv);
     if (qemu[0]) import_kernel_cmdline(true, import_kernel_nv);
+
+    /* propagate androidboot variables as standard POSIX env variables
+     * for processes that can't access Android properties
+     */
+    import_kernel_cmdline(false, kernel_cmdline_to_env);
 }
 
 static int queue_property_triggers_action(const std::vector<std::string>& args)
