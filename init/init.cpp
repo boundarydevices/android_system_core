@@ -856,6 +856,21 @@ static void process_kernel_dt(void)
     }
 }
 
+static void kernel_cmdline_to_env(char *name, int in_qemu)
+{
+    /* only add variable that are android-specific */
+    if (!strncmp(name, "androidboot.", 12)) {
+        char *sep = strchr(name, '=');
+        INFO("%s: %s\n", __func__, name);
+        if (sep) {
+            *sep = 0;
+            setenv(name, sep + 1, 0);
+            /* add it to ENV array for forked processes */
+            add_environment(name, sep + 1);
+        }
+    }
+}
+
 static void process_kernel_cmdline(void)
 {
     /* don't expose the raw commandline to nonpriv processes */
@@ -868,6 +883,11 @@ static void process_kernel_cmdline(void)
     import_kernel_cmdline(false, import_kernel_nv);
     if (qemu[0])
         import_kernel_cmdline(true, import_kernel_nv);
+
+    /* propagate androidboot variables as standard POSIX env variables
+     * for processes that can't access Android properties
+     */
+    import_kernel_cmdline(false, kernel_cmdline_to_env);
 }
 
 static int queue_property_triggers_action(int nargs, char **args)
