@@ -7,7 +7,7 @@
 import /init.environ.rc
 import /init.usb.rc
 import /init.${ro.hardware}.rc
-import /init.${ro.zygote}.rc
+import /init.zygote32.rc
 import /init.trace.rc
 
 on early-init
@@ -65,11 +65,16 @@ on init
     mkdir /cache 0770 system cache
     mkdir /config 0500 root root
 
+    mkdir /device 0771 system system
     # See storage config details at http://source.android.com/tech/storage/
     mkdir /mnt/shell 0700 shell shell
-    mkdir /mnt/media_rw 0700 media_rw media_rw
+    mkdir /mnt/media_rw 0751 media_rw media_rw
     mkdir /storage 0751 root sdcard_r
 
+    mkdir /mnt/media_rw/extsd 0755 system system
+    symlink /mnt/media_rw/extsd /storage/extsd
+    mkdir /mnt/media_rw/udisk 0755 system system
+    symlink /mnt/media_rw/udisk /storage/udisk
     # Directory for putting things only root should see.
     mkdir /mnt/secure 0700 root root
 
@@ -87,6 +92,10 @@ on init
     # Filesystem image public mount points.
     mkdir /mnt/obb 0700 root system
     mount tmpfs tmpfs /mnt/obb mode=0755,gid=1000
+
+    # shared memory used by middleware
+    mkdir /mnt/shm  0775 media syste
+    mount tmpfs tmpfs /mnt/shm mode=0775,uid=1013,gid=1000,size=1m
 
     # memory control cgroup
     mkdir /dev/memcg 0700 root system
@@ -199,6 +208,8 @@ on post-fs
     # This may have been created by the recovery system with odd permissions
     chown system cache /cache/recovery
     chmod 0770 /cache/recovery
+    # This may have been created by the recovery system with the wrong context. 
+    restorecon /cache/recovery 
 
     #change permissions on vmallocinfo so we can grab it from bugreports
     chown root log /proc/vmallocinfo
@@ -246,6 +257,8 @@ on post-fs-data
     chmod 0640 /data/dontpanic/apanic_threads
 
     write /proc/apanic_console 1
+    mkdir /data/media 0770 media_rw media_rw
+ 
 
     # create basic filesystem structure
     mkdir /data/misc 01771 system misc
@@ -280,6 +293,7 @@ on post-fs-data
     mkdir /data/app-asec 0700 root root
     mkdir /data/app-lib 0771 system system
     mkdir /data/app 0771 system system
+    mkdir /data/app/ing 0771 root root
     mkdir /data/property 0700 root root
 
     # create dalvik-cache, so as to enforce our permissions
@@ -320,7 +334,7 @@ on post-fs-data
     # must uncomment this line, otherwise encrypted filesystems
     # won't work.
     # Set indication (checked by vold) that we have finished this action
-    #setprop vold.post_fs_data_done 1
+    setprop vold.post_fs_data_done 1
 
 on boot
     # basic network init
@@ -342,8 +356,10 @@ on boot
     chmod 0220 /sys/module/lowmemorykiller/parameters/minfree
 
     # Tweak background writeout
-    write /proc/sys/vm/dirty_expire_centisecs 200
+    write /proc/sys/vm/dirty_expire_centisecs 50
+    write /proc/sys/vm/dirty_writeback_centisecs 100
     write /proc/sys/vm/dirty_background_ratio  5
+
 
     # Permissions for System Server and daemons.
     chown radio system /sys/android_power/state
@@ -487,13 +503,11 @@ service healthd /sbin/healthd
 service console /system/bin/sh
     class core
     console
-    disabled
-    user shell
-    group shell log
-    seclabel u:r:shell:s0
+    user root
+    group root
 
-on property:ro.debuggable=1
-    start console
+#on property:ro.debuggable=1
+#    start console
 
 # adbd is controlled via property triggers in init.<platform>.usb.rc
 service adbd /sbin/adbd --root_seclabel=u:r:su:s0
@@ -540,12 +554,6 @@ service debuggerd /system/bin/debuggerd
 service debuggerd64 /system/bin/debuggerd64
     class main
 
-service ril-daemon /system/bin/rild
-    class main
-    socket rild stream 660 root radio
-    socket rild-debug stream 660 radio system
-    user root
-    group radio cache inet misc audio log
 
 service surfaceflinger /system/bin/surfaceflinger
     class core
@@ -633,3 +641,4 @@ service pre-recovery /system/bin/uncrypt
     class main
     disabled
     oneshot
+
