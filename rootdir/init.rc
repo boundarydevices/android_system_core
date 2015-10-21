@@ -71,10 +71,6 @@ on init
 
     # Storage views to support runtime permissions
     mkdir /storage 0755 root root
-    mkdir /mnt/media_rw/extsd 0755 system system
-    symlink /mnt/media_rw/extsd /storage/extsd
-    mkdir /mnt/media_rw/udisk 0755 system system
-    symlink /mnt/media_rw/udisk /storage/udisk
     mkdir /mnt/runtime 0700 root root
     mkdir /mnt/runtime/default 0755 root root
     mkdir /mnt/runtime/default/self 0755 root root
