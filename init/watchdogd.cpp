@@ -24,6 +24,7 @@
 
 #include "log.h"
 #include "util.h"
+#include "property_service.h"
 
 #define DEV_NAME "/dev/watchdog"
 
@@ -38,6 +39,13 @@ int watchdogd_main(int argc, char **argv) {
     int margin = 10;
     if (argc >= 3) margin = atoi(argv[2]);
 
+    std::string value = property_get("ro.boot.watchdogd");
+    if ( !value.empty() && !(strcmp(value.c_str(), "disabled"))){
+        NOTICE("watchdogd disabled !\n");
+        while (true) {
+	        sleep(interval);
+        }
+	}
     NOTICE("started (interval %d, margin %d)!\n", interval, margin);
 
     int fd = open(DEV_NAME, O_RDWR|O_CLOEXEC);
