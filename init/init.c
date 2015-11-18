@@ -94,6 +94,7 @@ static time_t process_needs_restart;
 
 static const char *ENV[32];
 
+#define PROPERTY_MAX_VALUE 92
 /* add_environment - add "key=value" to the current environment */
 int add_environment(const char *key, const char *val)
 {
@@ -1017,12 +1018,20 @@ int main(int argc, char **argv)
     int signal_fd_init = 0;
     int keychord_fd_init = 0;
     bool is_charger = false;
+    char watchdog[PROPERTY_MAX_VALUE];
+    int ret;
 
+    ret = property_get("ro.boot.watchdogd", watchdog);
     if (!strcmp(basename(argv[0]), "ueventd"))
         return ueventd_main(argc, argv);
 
-    if (!strcmp(basename(argv[0]), "watchdogd"))
-        return watchdogd_main(argc, argv);
+    if (!strcmp(basename(argv[0]), "watchdogd")) {
+	if(ret && !(strcmp(watchdog, "disabled"))) {
+		return 0;
+	} else {
+		return watchdogd_main(argc, argv);
+	}
+	}
 
     /* clear the umask */
     umask(0);
