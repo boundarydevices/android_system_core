@@ -22,6 +22,7 @@
 #include <unistd.h>
 
 #include <android-base/logging.h>
+#include <android-base/properties.h>
 
 #define DEV_NAME "/dev/watchdog"
 
@@ -34,6 +35,12 @@ int main(int argc, char** argv) {
     int margin = 10;
     if (argc >= 3) margin = atoi(argv[2]);
 
+    if (android::base::GetProperty("ro.boot.watchdogd", "") == "disabled") {
+        LOG(INFO) << "watchdogd disabled !\n";
+        while (true) {
+            sleep(interval);
+        }
+    }
     LOG(INFO) << "watchdogd started (interval " << interval << ", margin " << margin << ")!";
 
     int fd = open(DEV_NAME, O_RDWR | O_CLOEXEC);
