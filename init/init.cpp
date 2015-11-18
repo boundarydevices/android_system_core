@@ -85,6 +85,7 @@ bool waiting_for_exec = false;
 
 static int epoll_fd = -1;
 
+#define PROPERTY_MAX_VALUE 92
 void register_epoll_handler(int fd, void (*fn)()) {
     epoll_event ev;
     ev.events = EPOLLIN;
@@ -997,12 +998,20 @@ static void selinux_initialize(bool in_kernel_domain) {
 }
 
 int main(int argc, char** argv) {
+    char watchdog[PROPERTY_MAX_VALUE];
+    int ret;
+
+    ret = property_get("ro.boot.watchdogd", watchdog);
+
     if (!strcmp(basename(argv[0]), "ueventd")) {
         return ueventd_main(argc, argv);
     }
 
     if (!strcmp(basename(argv[0]), "watchdogd")) {
-        return watchdogd_main(argc, argv);
+	if ( ret && !(strcmp(watchdog, "disabled")))
+		return 0;
+	else
+        	return watchdogd_main(argc, argv);
     }
 
     // Clear the umask.
