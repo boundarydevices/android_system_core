@@ -23,7 +23,7 @@ on property:ro.kernel.qemu=1
     start adbd
 
 on boot
-    setprop sys.usb.configfs 0
+    setprop sys.usb.configfs 1
 
 # Used to disable USB when switching states
 on property:sys.usb.config=none && property:sys.usb.configfs=0
