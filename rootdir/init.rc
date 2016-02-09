@@ -585,12 +585,13 @@ service healthd /sbin/healthd
 service console /system/bin/sh
     class core
     console
+    disabled
     user root
-    group root
+    group root shell log
     seclabel u:r:shell:s0
 
-#on property:ro.debuggable=1
-#    start console
+on property:ro.debuggable=1
+    start console
 
 # adbd is controlled via property triggers in init.<platform>.usb.rc
 service adbd /sbin/adbd --root_seclabel=u:r:su:s0
