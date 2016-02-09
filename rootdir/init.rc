@@ -469,9 +469,6 @@ on property:vold.decrypt=trigger_shutdown_framework
     class_reset late_start
     class_reset main
 
-on property:ro.boot.selinux=disabled
-    start console
- 
 on property:sys.powerctl=*
     powerctl ${sys.powerctl}
 
@@ -512,8 +509,8 @@ service console /system/bin/sh
     group root
     disabled
 
-#on property:ro.debuggable=1
-#    start console
+on property:ro.debuggable=1
+    start console
 
 # adbd is controlled via property triggers in init.<platform>.usb.rc
 service adbd /sbin/adbd --root_seclabel=u:r:su:s0
