@@ -71,10 +71,11 @@ on init
     mkdir /mnt/media_rw 0751 media_rw media_rw
     mkdir /storage 0751 root sdcard_r
 
-    mkdir /mnt/media_rw/extsd 0755 system system
-    symlink /mnt/media_rw/extsd /storage/extsd
-    mkdir /mnt/media_rw/udisk 0755 system system
-    symlink /mnt/media_rw/udisk /storage/udisk
+    mkdir /mnt/media_rw/extsd 0700 media_rw media_rw
+    mkdir /storage/extsd 0700 root root
+    mkdir /mnt/media_rw/udisk 0700 media_rw media_rw
+    mkdir /storage/udisk 0700 root root
+
     # Directory for putting things only root should see.
     mkdir /mnt/secure 0700 root root
 
