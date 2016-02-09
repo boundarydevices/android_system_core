@@ -658,15 +658,16 @@ service healthd /sbin/healthd
 service console /system/bin/sh
     class core
     console
+    disabled
     user root
-    group root
+    group root shell log readproc
     seclabel u:r:shell:s0
 
-#on property:ro.debuggable=1
-#    # Give writes to anyone for the trace folder on debug builds.
-#    # The folder is used to store method traces.
-#    chmod 0773 /data/misc/trace
-#    start console
+on property:ro.debuggable=1
+    # Give writes to anyone for the trace folder on debug builds.
+    # The folder is used to store method traces.
+    chmod 0773 /data/misc/trace
+    start console
 
 service flash_recovery /system/bin/install-recovery.sh
     class main
