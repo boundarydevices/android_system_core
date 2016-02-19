@@ -15,7 +15,7 @@
  */
 
 /*
- * Copyright (C) 2013-2014 Freescale Semiconductor, Inc.
+ * Copyright (C) 2013-2016 Freescale Semiconductor, Inc.
  */
 
 #define LOG_TAG "healthd"
@@ -323,6 +323,7 @@ bool BatteryMonitor::update(void) {
     // always report AC plug-in and capacity 100% if emulated.battery is set to 1
     property_get("sys.emulated.battery", prop, "0");
     if (!strcmp(prop, "1")){
+        props.chargerUsbOnline = true;
         props.chargerAcOnline = true;
         props.batteryLevel = 100;
         props.chargerWirelessOnline = false;
