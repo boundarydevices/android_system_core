@@ -4,7 +4,7 @@
  * Memory Allocator functions for ion
  *
  *   Copyright 2011 Google, Inc
- *   Copyright (C) 2012-2014 Freescale Semiconductor, Inc.
+ *   Copyright (C) 2012-2016 Freescale Semiconductor, Inc.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ unsigned long ion_phys(int fd, ion_user_handle_t handle)
 
 	struct ion_custom_data custom = {
 		.cmd = ION_IOC_PHYS,
-		.arg = (int)&data,
+		.arg = (uintptr_t)&data,
 	};
 
         ret = ion_custom(fd, &custom);
