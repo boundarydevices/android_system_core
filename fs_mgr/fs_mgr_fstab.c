@@ -105,6 +105,8 @@ static uint64_t calculate_zram_size(unsigned int percentage)
     return total;
 }
 
+static char *get_boot_device(char const *fstab_entry);
+
 static int parse_flags(char *flags, struct flag_list *fl,
                        struct fs_mgr_flag_values *flag_vals,
                        char *fs_options, int fs_options_len)
@@ -139,7 +141,7 @@ static int parse_flags(char *flags, struct flag_list *fl,
                     /* The encryptable flag is followed by an = and the
                      * location of the keys.  Get it and return it.
                      */
-                    flag_vals->key_loc = strdup(strchr(p, '=') + 1);
+                    flag_vals->key_loc = get_boot_device(strchr(p, '=') + 1);
                 } else if ((fl[i].flag == MF_VERIFY) && flag_vals) {
                     /* If the verify flag is followed by an = and the
                      * location for the verity state,  get it and return it.
@@ -152,12 +154,12 @@ static int parse_flags(char *flags, struct flag_list *fl,
                     /* The forceencrypt flag is followed by an = and the
                      * location of the keys.  Get it and return it.
                      */
-                    flag_vals->key_loc = strdup(strchr(p, '=') + 1);
+                    flag_vals->key_loc = get_boot_device(strchr(p, '=') + 1);
                 } else if ((fl[i].flag == MF_FORCEFDEORFBE) && flag_vals) {
                     /* The forcefdeorfbe flag is followed by an = and the
                      * location of the keys.  Get it and return it.
                      */
-                    flag_vals->key_loc = strdup(strchr(p, '=') + 1);
+                    flag_vals->key_loc = get_boot_device(strchr(p, '=') + 1);
                     flag_vals->file_encryption_mode = EM_SOFTWARE;
                 } else if ((fl[i].flag == MF_FILEENCRYPTION) && flag_vals) {
                     /* The fileencryption flag is followed by an = and the
