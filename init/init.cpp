@@ -73,6 +73,7 @@ struct selabel_handle *sehandle_prop;
 
 static int property_triggers_enabled = 0;
 
+static char soc[32];
 static char qemu[32];
 
 int have_console;
@@ -434,6 +435,12 @@ static void export_kernel_boot_props() {
         std::string value = property_get(prop_map[i].src_prop);
         property_set(prop_map[i].dst_prop, (!value.empty()) ? value.c_str() : prop_map[i].default_value);
     }
+    /* if this was given on kernel command line, override what we read
+     * before (e.g. from /sys/devices/soc0/soc_id), if anything */
+    std::string tmp = property_get("ro.boot.soc");
+    if (!tmp.empty())
+        strlcpy(soc, tmp.c_str(), sizeof(soc));
+    property_set("ro.soc", soc);
 }
 
 static void process_kernel_dt() {
@@ -621,6 +628,7 @@ int main(int argc, char** argv) {
     klog_set_level(KLOG_NOTICE_LEVEL);
 
     NOTICE("init %s started!\n", is_first_stage ? "first stage" : "second stage");
+    get_soc_name(soc);
 
     if (!is_first_stage) {
         // Indicate that booting is in progress to background fw loaders, etc.
