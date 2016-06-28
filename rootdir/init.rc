@@ -493,7 +493,7 @@ on post-fs-data
     # must uncomment this line, otherwise encrypted filesystems
     # won't work.
     # Set indication (checked by vold) that we have finished this action
-    #setprop vold.post_fs_data_done 1
+    setprop vold.post_fs_data_done 1
 
 on boot
     # basic network init
@@ -512,7 +512,8 @@ on boot
     chmod 0664 /sys/module/lowmemorykiller/parameters/minfree
 
     # Tweak background writeout
-    write /proc/sys/vm/dirty_expire_centisecs 200
+    write /proc/sys/vm/dirty_expire_centisecs 50
+    write /proc/sys/vm/dirty_writeback_centisecs 100
     write /proc/sys/vm/dirty_background_ratio  5
 
     # Permissions for System Server and daemons.
@@ -657,16 +658,15 @@ service healthd /sbin/healthd
 service console /system/bin/sh
     class core
     console
-    disabled
-    user shell
-    group shell log readproc
+    user root
+    group root
     seclabel u:r:shell:s0
 
-on property:ro.debuggable=1
-    # Give writes to anyone for the trace folder on debug builds.
-    # The folder is used to store method traces.
-    chmod 0773 /data/misc/trace
-    start console
+#on property:ro.debuggable=1
+#    # Give writes to anyone for the trace folder on debug builds.
+#    # The folder is used to store method traces.
+#    chmod 0773 /data/misc/trace
+#    start console
 
 service flash_recovery /system/bin/install-recovery.sh
     class main
