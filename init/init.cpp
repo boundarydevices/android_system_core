@@ -728,6 +728,8 @@ static int keychord_init_action(int nargs, char **args)
 static int console_init_action(int nargs, char **args)
 {
     char console[PROP_VALUE_MAX];
+    char value[PROP_VALUE_MAX];
+
     if (property_get("ro.boot.console", console) > 0) {
         snprintf(console_name, sizeof(console_name), "/dev/%s", console);
     }
@@ -736,6 +738,10 @@ static int console_init_action(int nargs, char **args)
     if (fd >= 0)
         have_console = 1;
     close(fd);
+
+    if (property_get("ro.init.skip.text", value) > 0) {
+        return 0;
+    }
 
     fd = open("/dev/tty0", O_WRONLY | O_CLOEXEC);
     if (fd >= 0) {
