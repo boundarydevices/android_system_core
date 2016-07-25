@@ -364,6 +364,10 @@ static int console_init_action(const std::vector<std::string>& args)
         have_console = 1;
     close(fd);
 
+    if (property_get("ro.init.skip.text") == "1") {
+        return 0;
+    }
+
     fd = open("/dev/tty0", O_WRONLY | O_CLOEXEC);
     if (fd >= 0) {
         const char *msg;
