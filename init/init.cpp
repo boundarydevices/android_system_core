@@ -79,7 +79,7 @@ static int have_console;
 static char console_name[PROP_VALUE_MAX] = "/dev/console";
 static time_t process_needs_restart;
 
-static const char *ENV[32];
+static const char *ENV[64];
 
 bool waiting_for_exec = false;
 
