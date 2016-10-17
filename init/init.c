@@ -733,6 +733,12 @@ static void import_kernel_nv(char *name, int for_emulator)
         char prop[PROP_NAME_MAX];
         int cnt;
 
+        /* Special case for ro.sf.hwrotation */
+        if (!strcmp(name, "androidboot.hwrotation")) {
+            property_set("ro.sf.hwrotation", value);
+            return;
+        }
+
         cnt = snprintf(prop, sizeof(prop), "ro.boot.%s", boot_prop_name);
         if (cnt < PROP_NAME_MAX)
             property_set(prop, value);
