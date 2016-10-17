@@ -404,6 +404,8 @@ static void import_kernel_nv(const std::string& key, const std::string& value, b
 
     if (key == "qemu") {
         strlcpy(qemu, value.c_str(), sizeof(qemu));
+    } else if (android::base::StartsWith(key, "androidboot.hwrotation")) {
+        property_set("ro.sf.hwrotation", value.c_str());
     } else if (android::base::StartsWith(key, "androidboot.")) {
         property_set(android::base::StringPrintf("ro.boot.%s", key.c_str() + 12).c_str(),
                      value.c_str());
