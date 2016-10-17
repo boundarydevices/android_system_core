@@ -24,7 +24,7 @@ class Service;
 
 #define COMMAND_RETRY_TIMEOUT 5
 
-extern const char *ENV[32];
+extern const char *ENV[64];
 extern bool waiting_for_exec;
 extern int have_console;
 extern std::string console_name;

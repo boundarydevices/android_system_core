@@ -80,7 +80,7 @@ int have_console;
 std::string console_name = "/dev/console";
 static time_t process_needs_restart;
 
-const char *ENV[32];
+const char *ENV[64];
 
 bool waiting_for_exec = false;
 
