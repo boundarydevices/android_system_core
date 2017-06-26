@@ -647,6 +647,7 @@ static int keychord_init_action(int nargs, char **args)
 static int console_init_action(int nargs, char **args)
 {
     int fd;
+    char tmp[PROP_VALUE_MAX];
 
     if (console[0]) {
         snprintf(console_name, sizeof(console_name), "/dev/%s", console);
@@ -657,7 +658,7 @@ static int console_init_action(int nargs, char **args)
         have_console = 1;
     close(fd);
 
-    if (property_get("ro.init.skip.text") == "1") {
+    if ((property_get("ro.init.skip.text", tmp) != 0) && (strcmp(tmp, "1") == 0)) {
         return 0;
     }
 
