@@ -1341,7 +1341,6 @@ service console /system/bin/sh
     user shell
     group shell log readproc
     seclabel u:r:shell:s0
-    setenv HOSTNAME console
     shutdown critical
 
 on property:ro.debuggable=1
