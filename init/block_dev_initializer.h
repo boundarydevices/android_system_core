@@ -44,6 +44,7 @@ class BlockDevInitializer final {
 
     std::unique_ptr<DeviceHandler> device_handler_;
     UeventListener uevent_listener_;
+    std::set<std::string> boot_devices_;
 };
 
 }  // namespace init

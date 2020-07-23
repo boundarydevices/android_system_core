@@ -31,6 +31,7 @@ using namespace std::chrono_literals;
 
 BlockDevInitializer::BlockDevInitializer() : uevent_listener_(16 * 1024 * 1024) {
     auto boot_devices = android::fs_mgr::GetBootDevices();
+    boot_devices_ = boot_devices;
     device_handler_ = std::make_unique<DeviceHandler>(
             std::vector<Permissions>{}, std::vector<SysfsPermissions>{}, std::vector<Subsystem>{},
             std::move(boot_devices), false);
@@ -94,6 +95,18 @@ ListenerAction BlockDevInitializer::HandleUevent(const Uevent& uevent,
         if (iter == devices->end()) {
             return ListenerAction::kContinue;
         }
+    }
+
+    decltype (boot_devices_.begin()) boot_device_it;
+    for(boot_device_it = boot_devices_.begin(); boot_device_it != boot_devices_.end(); boot_device_it++) {
+        if (uevent.path.find(*boot_device_it) == uevent.path.npos) {
+            continue;
+        } else {
+            break;
+        }
+    }
+    if (boot_device_it == boot_devices_.end()) {
+        return ListenerAction::kContinue;
     }
 
     LOG(VERBOSE) << __PRETTY_FUNCTION__ << ": found partition: " << name;
