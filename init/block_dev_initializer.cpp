@@ -97,16 +97,16 @@ ListenerAction BlockDevInitializer::HandleUevent(const Uevent& uevent,
         }
     }
 
-    decltype (boot_devices_.begin()) boot_device_it;
-    for(boot_device_it = boot_devices_.begin(); boot_device_it != boot_devices_.end(); boot_device_it++) {
-        if (uevent.path.find(*boot_device_it) == uevent.path.npos) {
-            continue;
-        } else {
-            break;
+    if (!android::base::StartsWith(uevent.path, "/devices/virtual")) {
+        decltype (boot_devices_.begin()) boot_device_it;
+        for(boot_device_it = boot_devices_.begin(); boot_device_it != boot_devices_.end(); boot_device_it++) {
+            if (uevent.path.find(*boot_device_it) != uevent.path.npos) {
+                break;
+            }
         }
-    }
-    if (boot_device_it == boot_devices_.end()) {
-        return ListenerAction::kContinue;
+        if (boot_device_it == boot_devices_.end()) {
+            return ListenerAction::kContinue;
+        }
     }
 
     LOG(VERBOSE) << __PRETTY_FUNCTION__ << ": found partition: " << name;
