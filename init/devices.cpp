@@ -17,6 +17,7 @@
 #include "devices.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <fnmatch.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>
@@ -412,6 +413,15 @@ void DeviceHandler::HandleDevice(const std::string& action, const std::string& d
             }
         }
         unlink(devpath.c_str());
+    }
+
+    if (action == "change") {
+        /* Open-close devpath in case it needs to clear events (scsi) */
+        if (devpath.find("/dev/block/sd") != std::string::npos) {
+            int fd = open(devpath.c_str(), O_RDONLY);
+            if (fd >= 0)
+                close(fd);
+        }
     }
 }
 
