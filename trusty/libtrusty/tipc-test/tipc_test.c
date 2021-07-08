@@ -926,7 +926,7 @@ static int send_fd_test(const struct tipc_test_params* params) {
     }
 
     size_t buf_size = memref_chunk_size * num_chunks;
-    dma_buf = DmabufHeapAlloc(allocator, "system", buf_size, 0, 0 /* legacy align */);
+    dma_buf = DmabufHeapAlloc(allocator, "reserved", buf_size, 0, 0 /* legacy align */);
     if (dma_buf < 0) {
         ret = dma_buf;
         fprintf(stderr, "Failed to create dma-buf fd of size %zu err (%d)\n", buf_size, ret);

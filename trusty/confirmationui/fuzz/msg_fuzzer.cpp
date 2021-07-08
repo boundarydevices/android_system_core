@@ -60,7 +60,7 @@ extern "C" int LLVMFuzzerInitialize(int* /* argc */, char*** /* argv */) {
     }
 
     BufferAllocator allocator;
-    dma_buf.reset(allocator.Alloc(kDmabufSystemHeapName, CONFIRMATIONUI_MAX_MSG_SIZE));
+    dma_buf.reset(allocator.Alloc("reserved", CONFIRMATIONUI_MAX_MSG_SIZE));
     if (dma_buf < 0) {
         std::cerr << "Failed to allocate dma_buf" << std::endl;
         exit(-1);

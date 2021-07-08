@@ -116,7 +116,7 @@ Result<void> ModuleWrapper::SendMessage(bssl::Span<const bssl::Span<const uint8_
     };
 
     BufferAllocator alloc;
-    dmabuf_fd_.reset(alloc.Alloc(kDmabufSystemHeapName, shm_size_));
+    dmabuf_fd_.reset(alloc.Alloc("reserved", shm_size_));
     if (!dmabuf_fd_.ok()) {
         return ErrnoError() << "Error creating dmabuf";
     }

@@ -97,7 +97,7 @@ TrustyApp::TrustyApp(const std::string& path, const std::string& appname)
 
     uint32_t shm_len = CONFIRMATIONUI_MAX_MSG_SIZE;
     BufferAllocator allocator;
-    unique_fd dma_buf(allocator.Alloc("system", shm_len));
+    unique_fd dma_buf(allocator.Alloc("reserved", shm_len));
     if (dma_buf < 0) {
         LOG(ERROR) << AT << "failed to allocate shared memory buffer";
         return;

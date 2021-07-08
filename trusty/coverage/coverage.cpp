@@ -136,7 +136,7 @@ Result<void> CoverageRecord::Open() {
 
     BufferAllocator allocator;
 
-    fd = allocator.Alloc("system", shm_len_);
+    fd = allocator.Alloc("reserved", shm_len_);
     if (fd < 0) {
         return ErrnoError() << "failed to create dmabuf of size " << shm_len_
                             << " err code: " << fd;
