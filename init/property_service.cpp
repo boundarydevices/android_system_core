@@ -1310,6 +1310,30 @@ static void ExportKernelBootProps() {
         std::string value = GetProperty(prop.src_prop, prop.default_value);
         if (value != UNSET) InitPropertySet(prop.dst_prop, value);
     }
+    {
+        constexpr const char* sf_prop = "ro.surface_flinger.primary_display_orientation";
+        std::string value = GetProperty("ro.boot.hwrotation", UNSET);
+
+        if (value == UNSET)
+            return;
+
+        switch (atoi(value.c_str())) {
+        case 0:
+            InitPropertySet(sf_prop, "ORIENTATION_0");
+            break;
+        case 90:
+            InitPropertySet(sf_prop, "ORIENTATION_90");
+            break;
+        case 180:
+            InitPropertySet(sf_prop, "ORIENTATION_180");
+            break;
+        case 270:
+            InitPropertySet(sf_prop, "ORIENTATION_270");
+            break;
+        default:
+            LOG(WARNING) << "Wrong hwrotation value: " << value;
+        }
+    }
 }
 
 static void ProcessKernelDt() {
