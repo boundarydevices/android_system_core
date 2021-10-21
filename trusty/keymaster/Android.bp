@@ -84,9 +84,6 @@ cc_binary {
     name: "android.hardware.security.keymint-service.trusty",
     relative_install_path: "hw",
     init_rc: ["keymint/android.hardware.security.keymint-service.trusty.rc"],
-    vintf_fragments: [
-        "keymint/android.hardware.security.keymint-service.trusty.xml",
-    ],
     vendor: true,
     cflags: [
         "-Wall",
