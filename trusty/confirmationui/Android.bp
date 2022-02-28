@@ -23,6 +23,10 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
+confirmationui_defaults {
+    name: "confirmationui_defaults"
+}
+
 cc_binary {
     name: "android.hardware.confirmationui-service.trusty",
     relative_install_path: "hw",
@@ -75,6 +79,7 @@ cc_library {
     name: "android.hardware.confirmationui-lib.trusty",
     defaults: [
         "keymint_use_latest_hal_aidl_ndk_shared",
+        "confirmationui_defaults",
     ],
     vendor: true,
     shared_libs: [
@@ -86,6 +91,7 @@ cc_library {
         "libtrusty",
         "libutils",
         "libbinder_ndk",
+        "libhidlbase",
     ],
 
     export_include_dirs: ["include"],
@@ -120,4 +126,21 @@ cc_library {
         "-Werror",
         "-DTEEUI_USE_STD_VECTOR",
     ],
+}
+
+bootstrap_go_package {
+    name: "soong-confirmation_ui",
+    pkgPath: "android/soong/system/core/trusty/confirmationui",
+    deps: [
+        "blueprint",
+        "blueprint-pathtools",
+        "soong",
+        "soong-android",
+        "soong-cc",
+        "soong-genrule",
+    ],
+    srcs: [
+        "confirmationui.go",
+    ],
+    pluginFor: ["soong_build"],
 }
