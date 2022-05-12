@@ -100,7 +100,7 @@ class TrustyConfirmationUI : public BnConfirmationUI {
                             const teeui::MsgVector<teeui::UIOption>& uiOptions);
 #ifdef ENABLE_SECURE_DISPLAY
     sp<IDisplay> display_;
-    void enable_secure_display(bool enable);
+    void enable_secure_display(bool enable, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 #endif
 };
 
