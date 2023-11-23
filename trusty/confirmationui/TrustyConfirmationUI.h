@@ -17,6 +17,14 @@
 #ifndef ANDROID_HARDWARE_CONFIRMATIONUI_V1_0_TRUSTY_CONFIRMATIONUI_H
 #define ANDROID_HARDWARE_CONFIRMATIONUI_V1_0_TRUSTY_CONFIRMATIONUI_H
 
+#ifdef ENABLE_SECURE_DISPLAY
+#include <aidl/android/hardware/graphics/composer3/IComposer.h>
+#include <aidl/android/hardware/graphics/composer3/IComposerClient.h>
+#include <android/hardware/graphics/composer3/ComposerClientWriter.h>
+#include <android/hardware/graphics/composer/2.1/IComposer.h>
+#include <android/hardware/graphics/composer/2.1/IComposerClient.h>
+#endif
+
 #include <aidl/android/hardware/confirmationui/BnConfirmationUI.h>
 #include <aidl/android/hardware/confirmationui/IConfirmationResultCallback.h>
 #include <aidl/android/hardware/confirmationui/UIOption.h>
@@ -32,11 +40,18 @@
 
 #include "TrustyApp.h"
 
-#ifdef ENABLE_SECURE_DISPLAY
-#include <nxp/hardware/display/1.0/IDisplay.h>
-#endif
-
 namespace aidl::android::hardware::confirmationui {
+
+#ifdef ENABLE_SECURE_DISPLAY
+namespace V2_1 = ::android::hardware::graphics::composer::V2_1;
+using V2_1::Layer;
+using V2_1::Error;
+using aidl::android::hardware::graphics::composer3::ComposerClientWriter;
+using AidlFRect = aidl::android::hardware::graphics::common::FRect;
+using AidlRect = aidl::android::hardware::graphics::common::Rect;
+using aidl::android::hardware::graphics::composer3::CommandResultPayload;
+using aidl::android::hardware::graphics::composer3::Composition;
+#endif
 
 using std::shared_ptr;
 using std::string;
@@ -45,10 +60,6 @@ using ::android::sp;
 
 using ::aidl::android::hardware::security::keymint::HardwareAuthToken;
 using ::android::trusty::confirmationui::TrustyApp;
-
-#ifdef ENABLE_SECURE_DISPLAY
-using ::nxp::hardware::display::V1_0::IDisplay;
-#endif
 
 class TrustyConfirmationUI : public BnConfirmationUI {
   public:
@@ -99,8 +110,10 @@ class TrustyConfirmationUI : public BnConfirmationUI {
                             const teeui::MsgString& locale,
                             const teeui::MsgVector<teeui::UIOption>& uiOptions);
 #ifdef ENABLE_SECURE_DISPLAY
-    sp<IDisplay> display_;
-    void enable_secure_display(bool enable, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+    static constexpr int kMaxLayerBufferCount = 64;
+    int64_t layer_id;
+    int64_t primary_display_id;
+    Error enable_secure_display(bool enable, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 #endif
 };
 

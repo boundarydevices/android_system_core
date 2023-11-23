@@ -18,6 +18,7 @@
 #include "TrustyConfirmationUI.h"
 
 #include <android-base/logging.h>
+#include <android-base/properties.h>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <poll.h>
@@ -40,9 +41,7 @@
 #include <tuple>
 #include <vector>
 #ifdef ENABLE_SECURE_DISPLAY
-#include <nxp/hardware/display/1.0/IDisplay.h>
 #endif
-
 namespace aidl::android::hardware::confirmationui {
 using namespace secure_input;
 
@@ -68,12 +67,6 @@ using TeeuiRc = ::teeui::ResponseCode;
 
 constexpr const char kTrustyDeviceName[] = "/dev/trusty-ipc-dev0";
 constexpr const char kConfirmationuiAppName[] = CONFIRMATIONUI_PORT;
-
-#ifdef ENABLE_SECURE_DISPLAY
-using ::nxp::hardware::display::V1_0::Error;
-using ::android::hardware::Return;
-using ::android::hardware::Void;
-#endif
 
 namespace {
 
@@ -139,7 +132,11 @@ inline MsgVector<teeui::UIOption> stdVector2MsgVector(const vector<UIOption>& v)
 
 }  // namespace
 TrustyConfirmationUI::TrustyConfirmationUI()
-    : listener_state_(ListenerState::None), prompt_result_(IConfirmationUI::IGNORED) {}
+    : listener_state_(ListenerState::None), prompt_result_(IConfirmationUI::IGNORED) {
+#ifdef ENABLE_SECURE_DISPLAY
+    primary_display_id = 0;
+#endif
+}
 
 TrustyConfirmationUI::~TrustyConfirmationUI() {
     ListenerState state = listener_state_;
@@ -152,22 +149,79 @@ TrustyConfirmationUI::~TrustyConfirmationUI() {
 }
 
 #ifdef ENABLE_SECURE_DISPLAY
-void TrustyConfirmationUI::enable_secure_display(bool enable, uint32_t x, uint32_t y,
+template <typename To, typename From>
+To translate(From x) {
+    return static_cast<To>(x);
+}
+
+Error TrustyConfirmationUI::enable_secure_display(bool enable, uint32_t x, uint32_t y,
                                                  uint32_t w, uint32_t h) {
-    if (display_.get() == nullptr) {
-        sp<IDisplay> display = IDisplay::getService();
-        if (display.get() == nullptr) {
-            LOG(ERROR) << "confirmationui getService display failed";
-            return;
-        } else {
-            LOG(INFO) << "confirmationui getService display successfully";
-            display_ = display;
+    using AidlIComposer = aidl::android::hardware::graphics::composer3::IComposer;
+    using AidlIComposerClient = aidl::android::hardware::graphics::composer3::IComposerClient;
+    std::shared_ptr<AidlIComposer> mAidlComposer;
+    std::shared_ptr<AidlIComposerClient> mAidlComposerClient;
+    std::shared_ptr<ComposerClientWriter> mWriter;
+
+    std::string instance_name = ::android::base::GetProperty(std::string("debug.sf.hwc_service_name"), std::string("default"));
+    const std::string ComposerServiceName = std::string(AidlIComposer::descriptor) + "/" + instance_name;
+    mAidlComposer =  AidlIComposer::fromBinder(
+        ndk::SpAIBinder(AServiceManager_waitForService(ComposerServiceName.c_str())));
+
+    if (!mAidlComposer->createClient(&mAidlComposerClient).isOk()) {
+        LOG(ERROR) << "Can't create AidlComposerClient, fallback to HIDL";
+        return Error::NO_RESOURCES;
+    }
+    mWriter = std::make_shared<ComposerClientWriter>(primary_display_id);
+
+    Error error = Error::NONE;
+    // create a dummy layer
+    if (enable) {
+        Layer outLayer;
+        auto status = mAidlComposerClient->createLayer(primary_display_id, kMaxLayerBufferCount, &layer_id);
+        if (!status.isOk()) {
+            LOG(ERROR) << "createLayer failed " << status.getDescription();
+            return static_cast<Error>(status.getServiceSpecificError());
+        }
+
+        outLayer = translate<Layer>(layer_id);
+
+        // set source crop
+        AidlFRect source_crop;
+        source_crop.left = 0.0;
+        source_crop.top = 0.0;
+        source_crop.right = float(w);
+        source_crop.bottom = float(h);
+        mWriter->setLayerSourceCrop(primary_display_id, translate<int64_t>(outLayer), source_crop);
+
+        // set display frame
+        AidlRect display_crop;
+        display_crop.left = float(x);
+        display_crop.top = float(y);
+        display_crop.right = float(x + w);
+        display_crop.bottom = float(y + h);
+        mWriter->setLayerDisplayFrame(primary_display_id, translate<int64_t>(outLayer), display_crop);
+
+        // set layer type
+        Composition type = translate<Composition>(0xff);
+        mWriter->setLayerCompositionType(primary_display_id, translate<int64_t>(outLayer), type);
+
+        // excute command
+        auto commands = mWriter->takePendingCommands();
+        std::vector<CommandResultPayload> results;
+        status = mAidlComposerClient->executeCommands(commands, &results);
+        if (!status.isOk()) {
+            LOG(ERROR) << "executeCommands failed " << status.getDescription();
+            return static_cast<Error>(status.getServiceSpecificError());
+        }
+    } else {
+        auto status = mAidlComposerClient->destroyLayer(primary_display_id, layer_id);
+        if (!status.isOk()) {
+            LOG(ERROR) << "destroyLayer failed " << status.getDescription();
+            return static_cast<Error>(status.getServiceSpecificError());
         }
     }
-    auto res = display_->setSecureDisplayEnable(enable, x, y, w, h);
-    if (!res.isOk()) {
-            LOG(ERROR) << "setSecureDisplayEnable failed";
-    }
+
+    return error;
 }
 #endif
 
