@@ -135,6 +135,7 @@ TrustyConfirmationUI::TrustyConfirmationUI()
     : listener_state_(ListenerState::None), prompt_result_(IConfirmationUI::IGNORED) {
 #ifdef ENABLE_SECURE_DISPLAY
     primary_display_id = 0;
+    layer_id = -1;
 #endif
 }
 
@@ -214,10 +215,13 @@ Error TrustyConfirmationUI::enable_secure_display(bool enable, uint32_t x, uint3
             return static_cast<Error>(status.getServiceSpecificError());
         }
     } else {
-        auto status = mAidlComposerClient->destroyLayer(primary_display_id, layer_id);
-        if (!status.isOk()) {
-            LOG(ERROR) << "destroyLayer failed " << status.getDescription();
-            return static_cast<Error>(status.getServiceSpecificError());
+        if (layer_id >= 0) {
+            auto status = mAidlComposerClient->destroyLayer(primary_display_id, layer_id);
+            if (!status.isOk()) {
+                LOG(ERROR) << "destroyLayer failed " << status.getDescription();
+                return static_cast<Error>(status.getServiceSpecificError());
+            }
+            layer_id = -1;
         }
     }
 
@@ -369,7 +373,11 @@ TrustyConfirmationUI::promptUserConfirmation_(const MsgString& promptText,
     }
     uint32_t params[4];
     memcpy(params, (std::get<1>(secureui_params)).data(), sizeof(uint32_t)*4);
-    enable_secure_display(true, params[0], params[1], params[2], params[3]);
+    Error return_error = enable_secure_display(true, params[0], params[1], params[2], params[3]);
+    if (return_error != Error::NONE) {
+        LOG(ERROR) << "enable_secure_display failed: " << int32_t(return_error);
+        return result;
+    }
 #endif
     // initiate prompt
     LOG(INFO) << "Initiating prompt";
@@ -469,10 +477,6 @@ TrustyConfirmationUI::promptUserConfirmation_(const MsgString& promptText,
         result = {TeeuiRc::SystemError, {}, {}};
     }
 
-#ifdef ENABLE_SECURE_DISPLAY
-    // disable secure display
-    enable_secure_display(false, 0,0,0,0);
-#endif
     return result;
 
     //  ############################## Start 4th Phase - cleanup ##################################
@@ -510,6 +514,14 @@ TrustyConfirmationUI::promptUserConfirmation_(const MsgString& promptText,
         [this](const shared_ptr<IConfirmationResultCallback>& resultCB, const string& promptText,
                const vector<uint8_t>& extraData, const string& locale,
                const vector<UIOption>& uiOptions) {
+#ifdef ENABLE_SECURE_DISPLAY
+            /* set androidui overlay property */
+            if (!::android::base::SetProperty("vendor.androidui.overlay", "enable")) {
+                LOG(ERROR) << "ConfirmationUI set androidui overlay property failed";
+                return;
+            }
+#endif
+
             auto [trc, msg, token] = promptUserConfirmation_(
                 stdString2MsgString(promptText), stdVector2MsgVector(extraData),
                 stdString2MsgString(locale), stdVector2MsgVector(uiOptions));
@@ -517,6 +529,17 @@ TrustyConfirmationUI::promptUserConfirmation_(const MsgString& promptText,
                                 listener_state_ == ListenerState::SetupDone) &&
                                resultCB;
             prompt_result_ = convertRc(trc);
+#ifdef ENABLE_SECURE_DISPLAY
+            Error return_error = enable_secure_display(false, 0,0,0,0);
+            if (return_error != Error::NONE) {
+                LOG(ERROR) << "enable_secure_display failed: " << int32_t(return_error);
+            }
+            /* set androidui overlay property */
+            if (!::android::base::SetProperty("vendor.androidui.overlay", "disable")) {
+                LOG(ERROR) << "ConfirmationUI set androidui overlay property failed";
+                return;
+            }
+#endif
             listener_state_ = ListenerState::Terminating;
             if (do_callback) {
                 auto error = resultCB->result(prompt_result_, msg, token);
