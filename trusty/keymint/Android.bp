@@ -41,7 +41,6 @@ rust_binary {
     vendor: true,
     defaults: ["android.hardware.security.keymint-service.rust.trusty.default"],
     init_rc: ["android.hardware.security.keymint-service.rust.trusty.rc"],
-    vintf_fragments: ["android.hardware.security.keymint-service.rust.trusty.xml"],
     required: [
         "android.hardware.hardware_keystore.xml",
     ],
