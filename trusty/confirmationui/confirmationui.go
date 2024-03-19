@@ -34,7 +34,7 @@ func imx_confirmationui_defaults(ctx android.LoadHookContext) {
          p.Target.Android.Include_dirs = append(p.Target.Android.Include_dirs, "frameworks/native/include")
          p.Target.Android.Include_dirs = append(p.Target.Android.Include_dirs, "frameworks/native/libs/ui/include")
          p.Target.Android.Header_libs = append(p.Target.Android.Header_libs, "android.hardware.graphics.composer3-command-buffer")
-         p.Target.Android.Shared_libs = append(p.Target.Android.Shared_libs, "android.hardware.graphics.composer3-V2-ndk")
+         p.Target.Android.Shared_libs = append(p.Target.Android.Shared_libs, "android.hardware.graphics.composer3-V3-ndk")
          p.Target.Android.Shared_libs = append(p.Target.Android.Shared_libs, "libfsldisplay")
          p.Target.Android.Shared_libs = append(p.Target.Android.Shared_libs, "android.hardware.graphics.composer@2.1")
          p.Target.Android.Static_libs = append(p.Target.Android.Static_libs, "libaidlcommonsupport")
