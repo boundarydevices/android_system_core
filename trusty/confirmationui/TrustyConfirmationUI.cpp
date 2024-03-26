@@ -227,6 +227,19 @@ Error TrustyConfirmationUI::enable_secure_display(bool enable, uint32_t x, uint3
 
     return error;
 }
+
+Error TrustyConfirmationUI::refresh_display(const std::shared_ptr<TrustyApp>& app) {
+    std::tuple<TeeuiRc, MsgVector<uint32_t>> secureui_params;
+    TrustyAppError error;
+    std::tie(error, secureui_params) = app->issueCmd<GetSecureUIParamsMsg, GetSecureUIParamsResponse>();
+    if (error != TrustyAppError::OK) {
+        LOG(ERROR) << "GetSecureUIParamsMsg failed: " << int32_t(error);
+        return Error::BAD_CONFIG;
+    }
+    uint32_t params[4];
+    memcpy(params, (std::get<1>(secureui_params)).data(), sizeof(uint32_t)*4);
+    return enable_secure_display(true, params[0], params[1], params[2], params[3]);
+}
 #endif
 
 std::tuple<TeeuiRc, MsgVector<uint8_t>, MsgVector<uint8_t>>
@@ -364,19 +377,13 @@ TrustyConfirmationUI::promptUserConfirmation_(const MsgString& promptText,
 
     TrustyAppError error;
 #ifdef ENABLE_SECURE_DISPLAY
-    // enable secure display
-    std::tuple<TeeuiRc, MsgVector<uint32_t>> secureui_params;
-    std::tie(error, secureui_params) = app->issueCmd<GetSecureUIParamsMsg, GetSecureUIParamsResponse>();
-    if (error != TrustyAppError::OK) {
-        LOG(ERROR) << "GetSecureUIParamsMsg failed: " << int32_t(error);
-        return result;
-    }
-    uint32_t params[4];
-    memcpy(params, (std::get<1>(secureui_params)).data(), sizeof(uint32_t)*4);
-    Error return_error = enable_secure_display(true, params[0], params[1], params[2], params[3]);
-    if (return_error != Error::NONE) {
-        LOG(ERROR) << "enable_secure_display failed: " << int32_t(return_error);
-        return result;
+    std::string soc_name = ::android::base::GetProperty(std::string("ro.boot.soc_type"), std::string(""));
+    if (soc_name.compare("imx8mq") == 0) {
+        Error return_error = refresh_display(app);
+        if (return_error != Error::NONE) {
+            LOG(ERROR) << "enable_secure_display failed: " << int32_t(return_error);
+            return result;
+        }
     }
 #endif
     // initiate prompt
@@ -397,7 +404,15 @@ TrustyConfirmationUI::promptUserConfirmation_(const MsgString& promptText,
         LOG(ERROR) << "PromptUserConfirmationMsg failed: " << uint32_t(rc);
         return result;
     }
-
+#ifdef ENABLE_SECURE_DISPLAY
+    if (soc_name.compare("imx95") == 0) {
+        Error return_error = refresh_display(app);
+        if (return_error != Error::NONE) {
+            LOG(ERROR) << "enable_secure_display failed: " << int32_t(return_error);
+            return result;
+        }
+    }
+#endif
     LOG(INFO) << "Grabbing event devices";
     EventLoop eventloop;
     bool grabbed =

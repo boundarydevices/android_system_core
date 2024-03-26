@@ -114,6 +114,7 @@ class TrustyConfirmationUI : public BnConfirmationUI {
     int64_t layer_id;
     int64_t primary_display_id;
     Error enable_secure_display(bool enable, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+    Error refresh_display(const std::shared_ptr<TrustyApp>& app);
 #endif
 };
 

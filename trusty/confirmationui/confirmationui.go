@@ -28,7 +28,8 @@ func imx_confirmationui_defaults(ctx android.LoadHookContext) {
         }
     }
     p := &props{}
-    if ctx.Config().VendorConfig("IMXPLUGIN").String("BOARD_SOC_TYPE") == "IMX8MQ" {
+    var soc_type string = ctx.Config().VendorConfig("IMXPLUGIN").String("BOARD_SOC_TYPE")
+    if soc_type == "IMX8MQ" || soc_type == "IMX95"{
          p.Target.Android.Cppflags = append(p.Target.Android.Cppflags, "-DENABLE_SECURE_DISPLAY")
          p.Target.Android.Include_dirs = append(p.Target.Android.Include_dirs, "frameworks/native/include")
          p.Target.Android.Include_dirs = append(p.Target.Android.Include_dirs, "frameworks/native/libs/ui/include")
