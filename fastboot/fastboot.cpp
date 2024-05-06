@@ -1029,7 +1029,7 @@ int64_t get_sparse_limit(int64_t size) {
         }
     }
 
-    if (size > limit) {
+    if ((size > limit) || (limit > 0)) {
         return std::min(limit, RESPARSE_LIMIT);
     }
 
