@@ -22,3 +22,26 @@ cc_library_headers {
 
     export_include_dirs: ["include"],
 }
+
+cc_binary {
+    name: "secure_dpu",
+    vendor: true,
+    srcs: ["SecureDpu.cpp"],
+    cflags: [
+         "-fvisibility=hidden",
+         "-Wall",
+         "-Werror",
+    ],
+    local_include_dirs: ["include"],
+
+    shared_libs: [
+        "liblog",
+        "libbase",
+        "libdmabufheap",
+        "libc",
+        "libutils",
+    ],
+    static_libs: [
+        "libtrusty",
+    ],
+}
