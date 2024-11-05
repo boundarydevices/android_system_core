@@ -22,7 +22,6 @@ rust_binary {
     relative_install_path: "hw",
     vendor: true,
     init_rc: ["android.hardware.security.secretkeeper.trusty.rc"],
-    vintf_fragments: ["android.hardware.security.secretkeeper.trusty.xml"],
     srcs: [
         "src/hal_main.rs",
     ],
